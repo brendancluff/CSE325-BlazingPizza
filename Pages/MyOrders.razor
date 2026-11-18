@@ -1,0 +1,47 @@
+
+@page "/myorders"
+@inject HttpClient HttpClient
+@inject NavigationManager NavigationManager
+
+
+<div class="main">
+    <div class="orders-list">
+        @if (ordersWithStatus == null)
+        {
+            <p>Loading orders...</p>
+        }
+        else if (!ordersWithStatus.Any())
+        {
+            <p>You haven't placed any orders yet.</p>
+        }
+        else
+        {
+            @foreach (var item in ordersWithStatus)
+            {
+                <div class="order-list-item">
+                    <div>
+                        <a href="myorders/@item.Order.OrderId" class="btn btn-success">
+    Track &gt;
+</a>
+                        <strong>Order #@item.Order.OrderId</strong>
+                        <p>@item.Order.CreatedTime.ToShortDateString()</p>
+                        <p>@item.Order.Pizzas.Count pizza(s)</p>
+                        <p>Total: @item.Order.GetFormattedTotalPrice()</p>
+                        <p>Status: @item.StatusText</p>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    List<OrderWithStatus>? ordersWithStatus;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        ordersWithStatus =
+            await HttpClient.GetFromJsonAsync<List<OrderWithStatus>>(
+                $"{NavigationManager.BaseUri}orders");
+    }
+}
